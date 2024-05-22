@@ -23,6 +23,7 @@ mongoose.connect(mongoUrl)
 app.use(cors())
 app.use(express.json())
 
+
 app.get('/api/blogs', (request, response) => {
   Blog
     .find({})
