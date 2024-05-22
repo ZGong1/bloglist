@@ -104,8 +104,15 @@ describe('finding maxes', () => {
       author: "Robert C. Martin",
       blogs: 3
     }
-
     assert.deepStrictEqual(toCompare, listHelper.mostBlogs(blogs))
+  })
+
+  test('check most likes', () => {
+    var toCompare = {
+      author: "Edsger W. Dijkstra",
+      likes: 17
+    }
+    assert.deepStrictEqual(toCompare, listHelper.mostLikes(blogs))
   })
 
 })
