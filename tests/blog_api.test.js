@@ -29,6 +29,12 @@ test('Correct number of notes returned', async () => {
     assert.strictEqual(response.body.length, 3)
 })
 
+test('check if id property is actually "id"', async () => {
+    const response = await api.get('/api/blogs')
+    console.log(response)
+    assert.notStrictEqual(response._body[0].id, undefined)
+})
+
 // close once finished
 after(async () => {
     await mongoose.connection.close()
