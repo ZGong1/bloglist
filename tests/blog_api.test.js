@@ -23,7 +23,7 @@ beforeEach(async () => {
 
 
 // Actual tests
-test('Correct number of notes returned', async () => {
+test('Correct number of blogs returned', async () => {
     const response = await api.get('/api/blogs')
 
     assert.strictEqual(response.body.length, 3)
@@ -31,8 +31,24 @@ test('Correct number of notes returned', async () => {
 
 test('check if id property is actually "id"', async () => {
     const response = await api.get('/api/blogs')
-    console.log(response)
     assert.notStrictEqual(response._body[0].id, undefined)
+    // console.log(response)
+})
+
+test('check POST method', async () => {
+    // make new blog to add
+    const newBlog = {title: "Eric4 Testerson's First blog", author:"Eric4", url:"test4.url.com", likes:3}
+
+    // actually post it and use .expect()
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    //check if # of entries went up
+    const numOfEntries = await Blog.countDocuments()
+    assert.strictEqual(numOfEntries, 4)
 })
 
 // close once finished
