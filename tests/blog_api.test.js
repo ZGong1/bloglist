@@ -51,6 +51,16 @@ test('check POST method', async () => {
     assert.strictEqual(numOfEntries, 4)
 })
 
+test('check if likes are defaulted to 0', async () => {
+    // make new blog to add
+    const newBlog = {title: "Eric4 Testerson's First blog", author:"Eric4", url:"test4.url.com"}
+
+    const response = await api.post('/api/blogs').send(newBlog)
+
+    // console.log(response._body)
+    assert.strictEqual(response._body.likes, 0)
+})
+
 // close once finished
 after(async () => {
     await mongoose.connection.close()
