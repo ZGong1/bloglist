@@ -61,6 +61,13 @@ test('check if likes are defaulted to 0', async () => {
     assert.strictEqual(response._body.likes, 0)
 })
 
+test('api returns 400 if title or url are missing', async () => {
+    const newBlog = {title: "Eric4 Testerson's First blog", author:"Eric4"}
+
+    await api.post('/api/blogs').send(newBlog).expect(400)
+
+})
+
 // close once finished
 after(async () => {
     await mongoose.connection.close()

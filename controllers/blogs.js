@@ -10,7 +10,12 @@ blogRouter.get('/', (request, response) => {
   })
   
 blogRouter.post('/', (request, response) => {
+
   const blog = new Blog(request.body)
+
+  if (!blog.url || !blog.title) {
+    return response.status(400).end()
+  }
   
   blog
     .save()
