@@ -68,6 +68,36 @@ test('api returns 400 if title or url are missing', async () => {
 
 })
 
+test('tests DELETE method', async () => {
+    const response = await api.get('/api/blogs')
+    const idToDelete = response._body[0].id
+
+    await api.delete(`/api/blogs/${idToDelete}`).expect(204)
+
+    const numOfBlogs = await Blog.countDocuments()
+
+    assert.strictEqual(numOfBlogs, 2)
+})
+
+test('PUT method to replace something', async () => {
+    const toPUT = {
+        "title": "Jenna42's Post",
+        "author": "Jenna2",
+        "url": "test.url.com",
+        "likes": 99
+    }
+    const response = await api.get('/api/blogs')
+    const idToPut = response._body[0].id
+
+    await api.put(`/api/blogs/${idToPut}`).send(toPUT).expect(200)
+
+    const secondResponse = await api.get('/api/blogs')
+    const toCheck = secondResponse._body[0]
+    delete toCheck.id
+
+    assert.deepStrictEqual(toCheck, toPUT)
+})
+
 // close once finished
 after(async () => {
     await mongoose.connection.close()
