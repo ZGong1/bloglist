@@ -11,14 +11,14 @@ blogRouter.get('/', async (request, response) => {
 })
 
 // adds new blog
-blogRouter.post('/', async (request, response) => {
+blogRouter.post('/', async (request, response, next) => {
   // checks if token is valid
   const token = request.token
   var decodedToken
   try {
     decodedToken = jwt.verify(token, process.env.SECRET)
-  } catch {
-    return response.status(401).send({error: "token verification failed"})
+  } catch (error) {
+    return next(error)
   }
   
   // find user to be poster of blog
@@ -43,14 +43,14 @@ blogRouter.post('/', async (request, response) => {
 })
 
 // deletes one by id
-blogRouter.delete('/:id', async (request, response) => {
+blogRouter.delete('/:id', async (request, response, next) => {
 
   // decode token
   var decodedToken
   try {
     decodedToken = jwt.verify(request.token, process.env.SECRET)
-  } catch {
-    return response.status(401).send({error: "invalid token"})
+  } catch (error) {
+    return next(error)
   }
 
   //verify token matches the poster
@@ -65,15 +65,14 @@ blogRouter.delete('/:id', async (request, response) => {
 })
 
 // updates one by id
-blogRouter.put('/:id', async (request, response) => {
+blogRouter.put('/:id', async (request, response, next) => {
   const body = request.body
 
   try {
     const updatedNote = await Blog.findByIdAndUpdate(request.params.id, body, {new: true})
     response.json(updatedNote).end()
-  } catch {
-    console.log("api error in put")
-    return response.status(500).end()
+  } catch (error) {
+    return next(error)
   }
 })
 
