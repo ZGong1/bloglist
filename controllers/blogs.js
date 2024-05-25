@@ -3,15 +3,6 @@ const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
-// get token from request helper function
-const getToken = request => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.startsWith('Bearer ')) {
-    return authorization.replace('Bearer ', '')
-  }
-  return null
-}
-
 
 // gets list of all blogs
 blogRouter.get('/', async (request, response) => {
@@ -22,7 +13,7 @@ blogRouter.get('/', async (request, response) => {
 // adds new blog
 blogRouter.post('/', async (request, response) => {
   // checks if token is valid
-  const token = getToken(request)
+  const token = request.token
   var decodedToken
   try {
     decodedToken = jwt.verify(token, process.env.SECRET)
@@ -33,7 +24,6 @@ blogRouter.post('/', async (request, response) => {
   // find user to be poster of blog
   const user = await User.findById(decodedToken.id)
   const userWhoPostedID = user._id
-
   const {title, author, url, likes} = request.body
 
   const blog = new Blog({
@@ -47,10 +37,8 @@ blogRouter.post('/', async (request, response) => {
 
   // save the blog, and new user data -> end 
   const savedBlog = await blog.save()
-
   user.notes = user.notes.concat(savedBlog._id)
   await user.save()
-
   response.status(201).json(savedBlog)
 })
 
