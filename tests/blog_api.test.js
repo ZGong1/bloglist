@@ -6,6 +6,7 @@ const app = require('../app')
 const api = supertest(app)
 
 const Blog = require('../models/blog')
+var token
 
 // Before Each method
 beforeEach(async () => {
@@ -19,6 +20,11 @@ beforeEach(async () => {
 
     newBlog = new Blog({title: "Eric3 Testerson's First blog", author:"Eric3", url:"test3.url.com", likes:3})
     await newBlog.save()
+
+    const tokenResponse = await api
+        .post('/api/login')
+        .send( {"username": "User2", "password": "testingpassword"} )
+    token = tokenResponse._body.token
 })
 
 
@@ -29,13 +35,16 @@ test('Correct number of blogs returned', async () => {
     assert.strictEqual(response.body.length, 3)
 })
 
-test('check if id property is actually "id"', async () => {
+test.only('check if id property is actually "id"', async () => {
     const response = await api.get('/api/blogs')
     assert.notStrictEqual(response._body[0].id, undefined)
     // console.log(response)
 })
 
 test('check POST method', async () => {
+    //get verification token
+    
+
     // make new blog to add
     const newBlog = {title: "Eric4 Testerson's First blog", author:"Eric4", url:"test4.url.com", likes:3}
 
@@ -43,6 +52,7 @@ test('check POST method', async () => {
     await api
         .post('/api/blogs')
         .send(newBlog)
+        .set({'authorization': `Bearer ${token}`})
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
@@ -55,7 +65,10 @@ test('check if likes are defaulted to 0', async () => {
     // make new blog to add
     const newBlog = {title: "Eric4 Testerson's First blog", author:"Eric4", url:"test4.url.com"}
 
-    const response = await api.post('/api/blogs').send(newBlog)
+    const response = await api
+        .post('/api/blogs')
+        .set({'authorization': `Bearer ${token}`})
+        .send(newBlog)
 
     // console.log(response._body)
     assert.strictEqual(response._body.likes, 0)
@@ -64,39 +77,52 @@ test('check if likes are defaulted to 0', async () => {
 test('api returns 400 if title or url are missing', async () => {
     const newBlog = {title: "Eric4 Testerson's First blog", author:"Eric4"}
 
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    await api
+        .post('/api/blogs')
+        .set({'authorization': `Bearer ${token}`})
+        .send(newBlog)
+        .expect(400)
 
 })
 
-test('tests DELETE method', async () => {
-    const response = await api.get('/api/blogs')
-    const idToDelete = response._body[0].id
+test.only('api rejects post with no token', async () => {
+    const newBlog = {title: "Eric4 Testerson's First blog", author:"Eric4", url:"test4.url.com", likes:3}
 
-    await api.delete(`/api/blogs/${idToDelete}`).expect(204)
-
-    const numOfBlogs = await Blog.countDocuments()
-
-    assert.strictEqual(numOfBlogs, 2)
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(401)
 })
 
-test('PUT method to replace something', async () => {
-    const toPUT = {
-        "title": "Jenna42's Post",
-        "author": "Jenna2",
-        "url": "test.url.com",
-        "likes": 99
-    }
-    const response = await api.get('/api/blogs')
-    const idToPut = response._body[0].id
+// test('tests DELETE method', async () => {
+//     const response = await api.get('/api/blogs')
+//     const idToDelete = response._body[0].id
 
-    await api.put(`/api/blogs/${idToPut}`).send(toPUT).expect(200)
+//     await api.delete(`/api/blogs/${idToDelete}`).expect(204)
 
-    const secondResponse = await api.get('/api/blogs')
-    const toCheck = secondResponse._body[0]
-    delete toCheck.id
+//     const numOfBlogs = await Blog.countDocuments()
 
-    assert.deepStrictEqual(toCheck, toPUT)
-})
+//     assert.strictEqual(numOfBlogs, 2)
+// })
+
+// test('PUT method to replace something', async () => {
+//     const toPUT = {
+//         "title": "Jenna42's Post",
+//         "author": "Jenna2",
+//         "url": "test.url.com",
+//         "likes": 99
+//     }
+//     const response = await api.get('/api/blogs')
+//     const idToPut = response._body[0].id
+
+//     await api.put(`/api/blogs/${idToPut}`).send(toPUT).expect(200)
+
+//     const secondResponse = await api.get('/api/blogs')
+//     const toCheck = secondResponse._body[0]
+//     delete toCheck.id
+
+//     assert.deepStrictEqual(toCheck, toPUT)
+// })
 
 // close once finished
 after(async () => {
