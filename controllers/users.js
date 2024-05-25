@@ -5,6 +5,18 @@ const User = require('../models/user')
 usersRouter.post('/', async (request, response) => {
     const {username, name, password} = request.body
 
+    if (username.length < 3) {
+        return response.status(400).send( {error: "invalid username length"} )
+    }
+    if (password.length < 3) {
+        return response.status(400).send( {error: "invalid password length"} )
+    }
+
+    const usernameCount = await User.countDocuments({username})
+    if (usernameCount > 0) {
+        return response.status(400).send( {error: "username is already taken"} )
+    }
+
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(password, saltRounds)
 
