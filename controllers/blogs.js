@@ -25,6 +25,13 @@ blogRouter.post('/', async (request, response) => {
 
   // save the blog and end 
   const savedBlog = await blog.save()
+
+  // TODO: add the note id to the correct user
+  const user = await User.findById(userWhoPostedID)
+  // console.log(user)
+  user.notes = user.notes.concat(savedBlog._id)
+  await user.save()
+
   response.status(201).json(savedBlog)
 })
 
