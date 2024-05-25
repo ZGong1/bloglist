@@ -22,8 +22,8 @@ blogRouter.post('/', async (request, response) => {
   }
   
   // find user to be poster of blog
-  const user = await User.findById(decodedToken.id)
-  const userWhoPostedID = user._id
+  const user = request.user
+  const userWhoPostedID = user.id
   const {title, author, url, likes} = request.body
 
   const blog = new Blog({
@@ -44,8 +44,24 @@ blogRouter.post('/', async (request, response) => {
 
 // deletes one by id
 blogRouter.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndDelete(request.params.id)
-  response.status(204).end()
+
+  // decode token
+  var decodedToken
+  try {
+    decodedToken = jwt.verify(request.token, process.env.SECRET)
+  } catch {
+    return response.status(401).send({error: "invalid token"})
+  }
+
+  //verify token matches the poster
+  const blogToDelete = await Blog.findById(request.params.id)
+  if (decodedToken.id === blogToDelete.user.toString()) {
+    await Blog.findByIdAndDelete(request.params.id)
+    return response.status(204).end()
+  } else {
+    return response.status(401).send({error: "you can only delete your own posts"})
+  }
+  
 })
 
 // updates one by id
