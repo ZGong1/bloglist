@@ -31,8 +31,8 @@ blogRouter.post('/', async (request, response) => {
   }
   
   // find user to be poster of blog
-  const userList = await User.findById(decodedToken.id)
-  const userWhoPostedID = userList._id
+  const user = await User.findById(decodedToken.id)
+  const userWhoPostedID = user._id
 
   const {title, author, url, likes} = request.body
 
@@ -48,7 +48,6 @@ blogRouter.post('/', async (request, response) => {
   // save the blog, and new user data -> end 
   const savedBlog = await blog.save()
 
-  const user = await User.findById(userWhoPostedID)
   user.notes = user.notes.concat(savedBlog._id)
   await user.save()
 
