@@ -33,7 +33,7 @@ usersRouter.post('/', async (request, response) => {
 
 // add get to show all users
 usersRouter.get('/', async (request, response) => {
-    const users = await User.find({})
+    const users = await User.find({}).populate('notes', {url:1, title:1, author:1, id:1})
     response.json(users)
 })
 
